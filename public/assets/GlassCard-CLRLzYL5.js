@@ -1,0 +1,1 @@
+import{j as o,m as r}from"./index-BPJV_jhe.js";const n=({children:a,className:t="",hover:i=!0,delay:s=0})=>o.jsx(r.div,{initial:{opacity:0,y:15},animate:{opacity:1,y:0},transition:{duration:.4,delay:s,ease:"easeOut"},whileHover:i?{y:-4}:{},className:`pro-card p-6 ${t}`,children:a});export{n as G};

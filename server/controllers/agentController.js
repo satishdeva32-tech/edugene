@@ -30,6 +30,28 @@ exports.createPlan = async (req, res, next) => {
     }
 };
 
+// @desc    Get AI Chat response
+// @route   POST /api/agent/chat
+// @access  Private
+exports.chat = async (req, res, next) => {
+    try {
+        const { message, isSystem } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ success: false, error: 'Please provide a message' });
+        }
+
+        const aiResponse = await agentService.getChatResponse(message, isSystem);
+
+        res.status(200).json({
+            success: true,
+            data: aiResponse
+        });
+    } catch (err) {
+        res.status(400).json({ success: false, error: err.message });
+    }
+};
+
 // @desc    Get AI Agent status
 // @route   GET /api/agent/status
 // @access  Private

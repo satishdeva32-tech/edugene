@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Mic, MicOff, Volume2, VolumeX, Sparkles, Zap, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import io from 'socket.io-client';
+import axios from 'axios';
 import useAIStore from '../store/useAIStore';
-
+import useAuthStore from '../store/useAuthStore';
 import { API_URL } from '../config';
 
 const AIAssistant = () => {
@@ -12,23 +12,12 @@ const AIAssistant = () => {
     const [chat, setChat] = useState([{ sender: 'ai', text: "Hey! I'm your EduGenie AI assistant. Ready to crush your learning goals today? ✨" }]);
     const [isListening, setIsListening] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(true);
-    const socketRef = useRef();
+    const [isLoading, setIsLoading] = useState(false);
     const recognitionRef = useRef(null);
     const scrollRef = useRef(null);
+    const { token } = useAuthStore();
 
     useEffect(() => {
-        socketRef.current = io(API_URL);
-
-        socketRef.current.on('connect', () => {
-            console.log("Connected to AI server on port 5000");
-        });
-
-        socketRef.current.on('message', (msg) => {
-            console.log("Received AI message:", msg);
-            setChat((prev) => [...prev, msg]);
-            if (isSpeaking) speak(msg.text);
-        });
-
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             recognitionRef.current = new SpeechRecognition();
@@ -45,14 +34,9 @@ const AIAssistant = () => {
             recognitionRef.current.onerror = () => setIsListening(false);
             recognitionRef.current.onend = () => setIsListening(false);
         }
-
-        return () => socketRef.current.disconnect();
     }, [isSpeaking]);
 
     const activeLesson = useAIStore(state => state.activeLesson);
-
-    // AI now only responds when manually clicked or messaged by the user.
-    // Removed automated lesson context triggers to respect privacy and focus.
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -60,12 +44,31 @@ const AIAssistant = () => {
         }
     }, [chat]);
 
-    const handleSend = (textToSend = message) => {
-        if (textToSend.trim()) {
+    const handleSend = async (textToSend = message) => {
+        if (textToSend.trim() && !isLoading) {
             const userMsg = { sender: 'user', text: textToSend };
             setChat((prev) => [...prev, userMsg]);
-            socketRef.current.emit('sendMessage', { userId: 'demo-user', message: textToSend });
             setMessage("");
+            setIsLoading(true);
+
+            try {
+                const response = await axios.post(`${API_URL}/api/agent/chat`,
+                    { message: textToSend },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                const aiMsg = { sender: 'ai', text: response.data.data };
+                setChat((prev) => [...prev, aiMsg]);
+                if (isSpeaking) speak(aiMsg.text);
+            } catch (error) {
+                console.error("AI Assistant Error:", error);
+                setChat((prev) => [...prev, {
+                    sender: 'ai',
+                    text: "Sorry, I lost my connection for a second. Can you try again?"
+                }]);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -150,6 +153,19 @@ const AIAssistant = () => {
                                     </div>
                                 </motion.div>
                             ))}
+                            {isLoading && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="flex justify-start"
+                                >
+                                    <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-white/5 p-4 rounded-3xl rounded-tl-none flex gap-1">
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" />
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                                    </div>
+                                </motion.div>
+                            )}
                         </div>
 
                         {/* Input Area */}

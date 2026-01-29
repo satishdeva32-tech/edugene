@@ -1,0 +1,1 @@
+import{c as o}from"./index-BPJV_jhe.js";const a=[["path",{d:"m12 19-7-7 7-7",key:"1l729n"}],["path",{d:"M19 12H5",key:"x3x0zl"}]],c=o("arrow-left",a);const t=[["path",{d:"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z",key:"10ikf1"}]],n=o("play",t);export{c as A,n as P};

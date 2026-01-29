@@ -1,0 +1,1 @@
+import{c}from"./index-BPJV_jhe.js";const e=[["path",{d:"M21.801 10A10 10 0 1 1 17 3.335",key:"yps3ct"}],["path",{d:"m9 11 3 3L22 4",key:"1pflzl"}]],n=c("circle-check-big",e);const t=[["path",{d:"M16 7h6v6",key:"box55l"}],["path",{d:"m22 7-8.5 8.5-5-5L2 17",key:"1t1m79"}]],i=c("trending-up",t);export{n as C,i as T};
